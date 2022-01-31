@@ -95,6 +95,15 @@ class WordleState:
         
         return WordleState(self.prune_vocabulary(), self.current_guess)
     
+    @staticmethod
+    def get_single_letter_input(letter, position):
+        allowed_inputs = ['g', 'y', 'x']
+        colour = input(f"Enter the colour of {letter} at {position}: ")
+        while colour not in allowed_inputs:
+            colour = input(f"Enter the colour of {letter} at {position}: ")
+        
+        return LetterGuess(position, letter, colour)
+    
     def prune_vocabulary(self):
         """Return new vocabulary based on the previous guess pattern."""
         new_vocab = self.vocabulary
