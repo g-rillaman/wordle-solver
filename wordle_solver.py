@@ -4,14 +4,8 @@ Created on Wed Jan 26 15:34:33 2022
 
 @author: LReynolds
 """
-class WordleState:
-    def __init__(self):
-        self.answer_space, self.guess_space = self.read_in_vocabulary()
-        self.vocabulary = self.answer_space
-        self.guess = None
-        self.guess_result = []
-    
-    def read_in_vocabulary(self):
+
+def read_in_vocabulary():
         """
         Return list of vocabulary words from text file.
     
@@ -35,6 +29,16 @@ class WordleState:
                 
         return answer_space, guess_space
     
+class WordleState:
+    guesses = 1
+    
+    def __init__(self, vocabulary, current_guess):
+        self.vocabulary = vocabulary
+        self.current_guess = current_guess
+        self.next_guess = None
+        self.guess_result = []
+        print(self)
+    
     def is_guess_correct(self):
         """Return True if the guess was the correct word, False otherwise."""
         for letter_state in self.guess_result:
@@ -57,7 +61,7 @@ class WordleState:
             The potential vocabulary list if all letters of best_guess show as
             grey. If this occurs, the answer is contained in here.
         """        
-        best_guess = ''
+        next_best_guess = ''
         pruned_vocabulary = self.vocabulary
         
         for guess_word in self.vocabulary:
@@ -65,10 +69,10 @@ class WordleState:
                               if not self.words_share_letters(word, guess_word)]
             if len(guess_vocabulary) < len(pruned_vocabulary):
                 #print("Changed")
-                best_guess = guess_word
+                next_best_guess = guess_word
                 pruned_vocabulary = guess_vocabulary
         
-        return best_guess, pruned_vocabulary
+        self.current_guess = next_best_guess
     
     @staticmethod
     def words_share_letters(word_1, word_2):
@@ -79,13 +83,26 @@ class WordleState:
         return False
     
     def input_guess_result(self):
+        """Take user input of guess result."""
+        print(f"The current guess is {self.current_guess}.")
         guess_result = []
-        for idx, letter in enumerate(self.guess):
+        for idx, letter in enumerate(self.current_guess):
             colour = input(f"Enter the colour of {letter} at {idx}: ")
             letter_state = LetterGuess(idx, letter, colour)
             guess_result.append(letter_state)
         
-        return guess_result
+        self.guess_result = guess_result
+        
+        return WordleState(self.prune_vocabulary(), self.current_guess)
+    
+    @staticmethod
+    def get_single_letter_input(letter, position):
+        allowed_inputs = ['g', 'y', 'x']
+        colour = input(f"Enter the colour of {letter} at {position}: ")
+        while colour not in allowed_inputs:
+            colour = input(f"Enter the colour of {letter} at {position}: ")
+        
+        return LetterGuess(position, letter, colour)
     
     def prune_vocabulary(self):
         """Return new vocabulary based on the previous guess pattern."""
@@ -103,6 +120,16 @@ class WordleState:
                              if letter_state.letter == word[letter_state.position]]
         
         return new_vocab
+    
+    def __repr__(self):
+        return f"""
+    WordleState:
+        Current guess : {self.current_guess}
+        Next guess : {self.next_guess}
+        Vocab Length : {len(self.vocabulary)}
+        self.next_guess = None
+        self.guess_result = []
+        """
                 
  
 class LetterGuess():
@@ -113,15 +140,10 @@ class LetterGuess():
 
 
 if __name__ == "__main__":
-    solver = WordleState()
-    
-    for i in range(6):
-        print(f"Turn {i}")
-        solver.guess, _ = solver.get_best_guess()
-        print(f"Best guess is {solver.guess}")
-        solver.guess_result = solver.input_guess_result()
-        if solver.solved:
-            print(f"The answer is {solver.guess}!")
-            break
-        solver.vocabulary = solver.prune_vocabulary()
+    answer_space, _ = read_in_vocabulary()
+    state = WordleState(answer_space, 'arise')
+    while WordleState.guesses < 7:
+        state.get_best_guess()
+        state = state.input_guess_result()
+        WordleState.guesses += 1
     
