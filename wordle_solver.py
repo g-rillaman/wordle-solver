@@ -110,12 +110,20 @@ class WordleState:
         
         for letter_state in self.guess_result:
             if letter_state.colour == 'x':
+                # Remove words that contain the letter
                 new_vocab = [word for word in new_vocab
                              if letter_state.letter not in word]
             elif letter_state.colour == 'y':
+                # Remove words that don't contain the letter
                 new_vocab = [word for word in new_vocab
                              if letter_state.letter in word]
+                # Remove words that contain the letter in this position
+                # (otherwise it would be green)
+                new_vocab = [word for word in new_vocab
+                             if word[letter_state.position] 
+                             != letter_state.letter]
             elif letter_state.colour == 'g':
+                # Remove words without the letter in the correct position
                 new_vocab = [word for word in new_vocab
                              if letter_state.letter == word[letter_state.position]]
         
